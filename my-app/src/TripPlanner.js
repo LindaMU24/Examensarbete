@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function TripPlanner() {
+function TripPlanner({ onLocationChange }) {
   const [startLocation, setStartLocation] = useState('');
   const [endLocation, setEndLocation] = useState('');
   const [stops, setStops] = useState([]);
@@ -20,6 +20,13 @@ function TripPlanner() {
     console.log('Start:', startLocation);
     console.log('End:', endLocation);
     console.log('Stops:', stops);
+
+    // Anropa callback-funktionen med de insamlade platserna
+    onLocationChange({
+      start: startLocation,
+      stops: stops,
+      end: endLocation,
+    });
   };
 
   return (
@@ -56,13 +63,13 @@ function TripPlanner() {
           />
         </label>
       </div>
-    <div className="button-group">
-      <button type="button" onClick={handleAddStop}>
-        Lägg till stopp
-      </button>
-      <button type="submit">Planera Resa</button>
-    </div>
-  </form>
+      <div className="button-group">
+        <button type="button" onClick={handleAddStop}>
+          Lägg till stopp
+        </button>
+        <button type="submit">Planera Resa</button>
+      </div>
+    </form>
   );
 }
 

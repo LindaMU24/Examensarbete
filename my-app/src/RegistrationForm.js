@@ -3,10 +3,12 @@
    function RegistrationForm() {
      const [username, setUsername] = useState('');
      const [carModel, setCarModel] = useState('');
+      const [password, setPassword] = useState('');
 
      const handleSubmit = (event) => {
        event.preventDefault();
        console.log('Username:', username);
+       console.log('Password:', '******'); // Never log passwords in real applications
        console.log('Car Model:', carModel);
        // Här kan du skicka data till backend eller hantera inloggning
      };
@@ -25,6 +27,16 @@
          </div>
          <div>
            <label>
+             Lösenord:
+             <input
+               type="text"
+               value={password}
+               onChange={(e) => setPassword(e.target.value)}
+             />
+           </label>
+         </div>
+         <div>
+           <label>
              Bilmodell:
              <input
                type="text"
@@ -33,7 +45,10 @@
              />
            </label>
          </div>
+         <div className="button-group">
+         <button type="button">Logga In</button>
          <button type="submit">Registrera</button>
+         </div>
        </form>
      );
    }
