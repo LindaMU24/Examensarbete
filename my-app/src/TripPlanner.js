@@ -69,6 +69,14 @@ function TripPlanner({ onLocationChange }) {
         </button>
         <button type="submit">Planera Resa</button>
       </div>
+      <div>
+        <label>Avstånd:
+          <output id="distanceOutput">-- km</output>
+        </label>
+      </div>
+      <label>Tid:
+        <output id="timeOutput">-- min</output>
+        </label>
     </form>
   );
 }

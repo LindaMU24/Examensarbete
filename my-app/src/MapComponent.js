@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
 import { MapContainer, TileLayer, Polyline/*, Marker, Popup*/ } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { geocodeAddress, getRoute } from './apiService';
+import { geocodeAddress, getFullRoute } from './apiService';
 
 
 const MapComponent = ({ locations }) => {
@@ -9,28 +9,38 @@ const MapComponent = ({ locations }) => {
   const mapRef = useRef();
 
   useEffect(() => {
-    const fetchRoute = async () => {
-      if (locations.start && locations.end) {
-        const startCoords = await geocodeAddress(locations.start);
-        const endCoords = await geocodeAddress(locations.end);
-        console.log('Startkoordinater:', startCoords);
-        console.log('Slutkoordinater:', endCoords);
-        if (startCoords && endCoords) {
-          const routeCoords = await getRoute(startCoords, endCoords);
-          console.log('Ruttkoordinater:', routeCoords);
-          setRoute(routeCoords);
+  const fetchRoute = async () => {
+    if (locations.start && locations.end && locations.stops) {
+      // Geokoda start-, stopp- och slutadresser
+      const startCoords = await geocodeAddress(locations.start);
+      const endCoords = await geocodeAddress(locations.end);
+      const stopCoordsPromises = locations.stops.map(stop => geocodeAddress(stop));
+      const stopCoords = await Promise.all(stopCoordsPromises);
+      console.log('Startkoordinater:', startCoords);
+      console.log('Slutkoordinater:', endCoords);
+      console.log('Stoppkoordinater:', stopCoords);
 
-          // Fit map bounds to the route
-          if (mapRef.current && routeCoords.length) {
-            const bounds = routeCoords.map(coord => [coord[1], coord[0]]);
-            mapRef.current.fitBounds(bounds);
-          }
+      // Kontrollera att alla koordinater är tillgängliga
+      if (startCoords && endCoords && stopCoords.every(coord => coord !== null)) {
+        // Skapa en lista av alla waypoints
+        const waypoints = [startCoords, ...stopCoords, endCoords];
+
+        // Hämta rutten med hjälp av alla waypoints
+        const routeCoords = await getFullRoute(waypoints);
+        console.log('Ruttkoordinater:', routeCoords);
+        setRoute(routeCoords);
+
+        // Anpassa kartans vy till rutten
+        if (mapRef.current && routeCoords.length) {
+          const bounds = routeCoords.map(coord => [coord[1], coord[0]]);
+          mapRef.current.fitBounds(bounds);
         }
       }
-    };
+    }
+  };
 
-    fetchRoute();
-  }, [locations]);
+  fetchRoute();
+}, [locations]);
 
   return (
     <MapContainer center={[63.0, 16.0]} zoom={4.5} style={{ height: "690px", width: "100%" }}
