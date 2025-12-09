@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function TripPlanner({ onLocationChange }) {
+function TripPlanner({ onLocationChange, distance, time }) {
   const [startLocation, setStartLocation] = useState('');
   const [endLocation, setEndLocation] = useState('');
   const [stops, setStops] = useState([]);
@@ -70,13 +70,17 @@ function TripPlanner({ onLocationChange }) {
         <button type="submit">Planera Resa</button>
       </div>
       <div>
-        <label>Avstånd:
-          <output id="distanceOutput">-- km</output>
-        </label>
-      </div>
-      <label>Tid:
-        <output id="timeOutput">-- min</output>
-        </label>
+  <label>Avstånd:
+    <output id="distanceOutput">{distance !== null ? `${distance} km` : '-- km'}</output>
+  </label>
+</div>
+<div>
+  <label>Tid:
+    <output id="timeOutput">
+      {time !== null ? `${time.hours} timmar och ${time.minutes} minuter` : '-- timmar och -- minuter'}
+    </output>
+  </label>
+</div>
     </form>
   );
 }

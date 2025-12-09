@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import MapComponent from './MapComponent';
 import RegistrationForm from './RegistrationForm';
 import TripPlanner from './TripPlanner';
@@ -11,9 +11,15 @@ function App() {
     end: null,
   });
 
+  const [routeInfo, setRouteInfo] = useState({ distance: null, time: null });
+
   const handleLocationChange = (newLocations) => {
     setLocations(newLocations);
   };
+
+  const handleRouteInfoUpdate = useCallback((distance, time) => {
+    setRouteInfo({ distance, time });
+  }, []); // useCallback för att memorera funktionen
 
   return (
     <div className="App">
@@ -25,10 +31,10 @@ function App() {
           <RegistrationForm />
         </div>
         <div className="map-container">
-       <MapComponent locations={locations} />
+          <MapComponent locations={locations} onRouteInfoUpdate={handleRouteInfoUpdate} />
         </div>
         <div className="App-sidebar">
-          <TripPlanner onLocationChange={handleLocationChange} />
+          <TripPlanner onLocationChange={handleLocationChange} distance={routeInfo.distance} time={routeInfo.time} />
         </div>
       </div>
     </div>

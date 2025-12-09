@@ -4,14 +4,13 @@ import 'leaflet/dist/leaflet.css';
 import { geocodeAddress, getFullRoute } from './apiService';
 
 
-const MapComponent = ({ locations }) => {
+const MapComponent = ({ locations, onRouteInfoUpdate }) => {
   const [route, setRoute] = useState([]);
   const mapRef = useRef();
 
   useEffect(() => {
   const fetchRoute = async () => {
     if (locations.start && locations.end && locations.stops) {
-      // Geokoda start-, stopp- och slutadresser
       const startCoords = await geocodeAddress(locations.start);
       const endCoords = await geocodeAddress(locations.end);
       const stopCoordsPromises = locations.stops.map(stop => geocodeAddress(stop));
@@ -20,18 +19,14 @@ const MapComponent = ({ locations }) => {
       console.log('Slutkoordinater:', endCoords);
       console.log('Stoppkoordinater:', stopCoords);
 
-      // Kontrollera att alla koordinater är tillgängliga
       if (startCoords && endCoords && stopCoords.every(coord => coord !== null)) {
-        // Skapa en lista av alla waypoints
         const waypoints = [startCoords, ...stopCoords, endCoords];
-
-        // Hämta rutten med hjälp av alla waypoints
-        const routeCoords = await getFullRoute(waypoints);
-        console.log('Ruttkoordinater:', routeCoords);
+        const { routeCoords, distance, time } = await getFullRoute(waypoints);
+        console.log('Route data:', { routeCoords, distance, time });
+        onRouteInfoUpdate(distance, time);
         setRoute(routeCoords);
 
-        // Anpassa kartans vy till rutten
-        if (mapRef.current && routeCoords.length) {
+      if (mapRef.current && routeCoords && routeCoords.length > 0) {
           const bounds = routeCoords.map(coord => [coord[1], coord[0]]);
           mapRef.current.fitBounds(bounds);
         }
@@ -40,7 +35,7 @@ const MapComponent = ({ locations }) => {
   };
 
   fetchRoute();
-}, [locations]);
+}, [locations, onRouteInfoUpdate]); // Ta bort onRouteInfoUpdate om det inte förändras mellan renderingar
 
   return (
     <MapContainer center={[63.0, 16.0]} zoom={4.5} style={{ height: "690px", width: "100%" }}
@@ -51,7 +46,7 @@ const MapComponent = ({ locations }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       {route.length > 0 && (
-        <Polyline positions={route.map(coord => [coord[1], coord[0]])} color="blue" />
+      <Polyline positions={route.map(coord => [coord[1], coord[0]])} color="blue" />
       )}
     </MapContainer>
   );
