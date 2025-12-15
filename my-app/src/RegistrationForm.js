@@ -1,57 +1,121 @@
-   import React, { useState } from 'react';
+   import React, { useState, useEffect } from 'react';
 
-   function RegistrationForm() {
-     const [username, setUsername] = useState('');
-     const [carModel, setCarModel] = useState('');
-      const [password, setPassword] = useState('');
+   function RegistrationForm({ onRegister, onLogin, selectedCarModel, setSelectedCarModel }) {
+       const [username, setUsername] = useState('');
+       const [carModels, setCarModels] = useState([]);
+       const [password, setPassword] = useState('');
 
-     const handleSubmit = (event) => {
-       event.preventDefault();
-       console.log('Username:', username);
-       console.log('Password:', '******'); // Never log passwords in real applications
-       console.log('Car Model:', carModel);
-       // Här kan du skicka data till backend eller hantera inloggning
-     };
+    useEffect(() => {
+    // Här kan du hämta bilmodeller från backend eller ett API
+    fetch('http://localhost:8080/api/car-models')
+      .then(response => response.json())
+      .then(data => setCarModels(data));
+  }, []);
 
-     return (
-       <form onSubmit={handleSubmit}>
-         <div>
-           <label>
-             Användarnamn:
-             <input
-               type="text"
-               value={username}
-               onChange={(e) => setUsername(e.target.value)}
-             />
-           </label>
-         </div>
-         <div>
-           <label>
-             Lösenord:
-             <input
-               type="text"
-               value={password}
-               onChange={(e) => setPassword(e.target.value)}
-             />
-           </label>
-         </div>
-         <div>
-           <label>
+  const handleCarModelChange = (e) => {
+     const modelName = e.target.value;
+     const model = carModels.find(m => m.name === modelName);
+     setSelectedCarModel(model);
+   };
+
+  const handleSubmit = (event) => {
+     event.preventDefault();
+     fetch('http://localhost:8080/api/register', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({ username, password, carModel: selectedCarModel?.name }),
+     })
+     .then(response => response.json())
+     .then(data => {
+       console.log('Success:', data);
+       onRegister({ username, carModel: data.carModel });
+       handleLogin();
+
+       // Uppdatera med bilmodell och räckvidd
+       setSelectedCarModel({
+         name: data.carModel,
+         range: data.range,
+       });
+     })
+     .catch((error) => {
+       console.error('Error:', error);
+     });
+   };
+   
+    const handleLogin = () => {
+     fetch('http://localhost:8080/api/login', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({ username, password }),
+     })
+     .then(response => response.json())
+     .then(data => {
+       console.log('Success:', data);
+       onLogin({ username, carModel: data.carModel });
+
+       // Uppdatera med bilmodell och räckvidd
+       setSelectedCarModel({
+         name: data.carModel,
+         range: data.range,
+       });
+     })
+     .catch((error) => {
+       console.error('Error:', error);
+     });
+   };  
+   
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label>
+          Användarnamn:
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          Lösenord:
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </label>
+      </div>
+      <div>
+          <label>
              Bilmodell:
-             <input
-               type="text"
-               value={carModel}
-               onChange={(e) => setCarModel(e.target.value)}
-             />
+             <select value={selectedCarModel.name || ''} onChange={handleCarModelChange}>
+               <option value="">Välj en modell</option>
+               {carModels.map((model) => (
+                 <option key={model.id} value={model.name}>
+                   {model.name} - Räckvidd: {model.range} km
+                 </option>
+               ))}
+             </select>
            </label>
          </div>
+         {selectedCarModel.name && (
+           <div>
+             <p>Vald bilmodell: {selectedCarModel.name}</p>
+             <p>Räckvidd: {selectedCarModel.range} km</p>
+           </div>
+         )}
          <div className="button-group">
-         <button type="button">Logga In</button>
-         <button type="submit">Registrera</button>
+           <button type="button" onClick={handleLogin}>Logga In</button>
+           <button type="submit">Registrera</button>
          </div>
        </form>
      );
-   }
+    }
 
-   export default RegistrationForm;
-   
+export default RegistrationForm;
