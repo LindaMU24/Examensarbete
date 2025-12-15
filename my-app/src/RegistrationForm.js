@@ -32,12 +32,6 @@
        console.log('Success:', data);
        onRegister({ username, carModel: data.carModel });
        handleLogin();
-
-       // Uppdatera med bilmodell och räckvidd
-       setSelectedCarModel({
-         name: data.carModel,
-         range: data.range,
-       });
      })
      .catch((error) => {
        console.error('Error:', error);
@@ -65,6 +59,7 @@
      })
      .catch((error) => {
        console.error('Error:', error);
+       alert('Något gick fel vid inloggningen. Vänligen försök igen.');
      });
    };  
    
